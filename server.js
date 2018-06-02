@@ -1,41 +1,63 @@
 /*jshint esversion: 6 */
 /*jslint node: true */
 
-var express = require('express');
+const http = require('http');
+const express = require('express');
+const MessagingResponse = require('twilio').twiml.MessagingResponse;
+const bodyParser = require("body-parser");
+const app = express();
+
+app.use(bodyParser.urlencoded({extended: false}));
+
+var todos = [];
+
+app.post('/sms', (req, res) => {
+    const message = req.body.Body;
+    console.log(`message: ${message}`);
+    var [cmd, predicate] = readMessage(message);
+
+    const response = `${cmd} predicate: ${predicate}`;
+    const twiml = new MessagingResponse();
+    //const response = 'This is a test response';
+    twiml.message(response);
+
+    res.writeHead(200, {'Content-Type': 'text/xml'});
+    res.end(twiml.toString());
+});
+
+function remove(todos, idx) {
+    var newList = [];
+    for(var i = 0; i <= todos.length; i++) {
+        var num = i + 1;
+        if(idx === num) {
+            // do nothing
+        } else {
+            newList.push(list[i]);
+        }
+    }
+    return newList;
+}
 
 function readMessage(message) {
     var pieces = message.split(' ');
-    var command = pieces[0];
+    var command = pieces[0].toLowerCase();
+    var predicate = pieces.slice(1).join(' ');
+    console.log(`[readMessage] command: ${command} predicate: ${predicate}`);
 
-    switch (message) {
+    switch (command) {
     case 'add':
-        console.log('You wanted to add');
-        break;
+        return ['add', predicate];
     case 'list':
-        console.log('You wanted to list');
-        break;
+        return ['list'];
     case 'remove':
-        console.log('You wanted to remove');
-        break;
+        return ['remove', predicate];
     default:
-        console.log('Sorry, we are out of ' + command + '.');
+        return ['unknown', predicate];
     }
+    return ['unknown', predicate];
 }
 
-var app = express();
-
-app.get('/', function(req, res) {
-    res.send('Hello, world');
-});
-
-app.get('/sms', function(req, res) {
-    const fromCountry = req.query.FromCountry;
-    const open = '<?xml version="1.0" encoding="UTF-8"?>';
-    const response = `<Response><Message>fromCountry = ${fromCountry}</Message></Response>`;
-    res.send(open + response);
-});
-
-var server = app.listen(8081, function() {
+const server = app.listen(8081, function() {
     var host = server.address().address;
     var port = server.address().port;
 
