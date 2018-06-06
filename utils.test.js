@@ -34,7 +34,9 @@ describe('#handle', () => {
     });
 
     test('returns list item and list when command is "add"', () => {
-        expect(utils.handle('add', todos, 'Drink water')).toEqual(['Drink water', ['Get the milk', 'Fix the foo', 'Drink water']]);
+        expect(utils.handle('add', todos, 'Drink water')).toEqual(
+            ['added: Drink water', ['Get the milk', 'Fix the foo', 'Drink water']]
+        );
     });
 
     test('returns stringified list and the todos when command is "list"', () => {
@@ -42,10 +44,10 @@ describe('#handle', () => {
     });
 
     test('returns index and shortened list command is "remove"', () => {
-        expect(utils.handle('remove', todos, '2')).toEqual(['2', ['Get the milk']]);
+        expect(utils.handle('remove', todos, '2')).toEqual(['removed: 2', ['Get the milk']]);
     });
 
     test('returns placeholder predicate and todos index command is unknown', () => {
-        expect(utils.handle('foo', todos, '2')).toEqual(['NO_PREDICATE', todos]);
+        expect(utils.handle('foo', todos, '2')).toEqual(['Invalid request', todos]);
     });
 });

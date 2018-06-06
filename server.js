@@ -14,10 +14,11 @@ var todos = [];
 
 app.post('/sms', (req, res) => {
     const message = req.body.Body;
-    console.log(`message: ${message}`);
     var [cmd, predicate] = utils.readMessage(message);
+    var [newPredicate, newTodos] = utils.handle(cmd, todos, predicate);
+    todos = newTodos;
 
-    const response = `${cmd} predicate: ${predicate}`;
+    const response = `${newPredicate}`;
     const twiml = new MessagingResponse();
     twiml.message(response);
 

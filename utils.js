@@ -13,7 +13,6 @@ function readMessage(message) {
     var pieces = message.split(' ');
     var command = pieces[0].toLowerCase();
     var predicate = pieces.slice(1).join(' ');
-    console.log(`[readMessage] command: ${command} predicate: ${predicate}`);
 
     switch (command) {
     case 'add':
@@ -44,15 +43,15 @@ function handle(command, todos, predicate) {
     // parse command, return lists and new predicate
     switch (command) {
     case 'add':
-        return [predicate, addTo(predicate, todos)];
+        return [`added: ${predicate}`, addTo(predicate, todos)];
     case 'list':
         return [echo(todos), todos];
     case 'remove':
-        return [predicate, remove(todos, predicate)];
+        return [`removed: ${predicate}`, remove(todos, predicate)];
     default:
-        return ['NO_PREDICATE', todos];
+        return ['Invalid request', todos];
     }
-    return ['NO_PREDICATE', todos];
+    return ['Invalid request', todos];
 }
 
 module.exports = {
