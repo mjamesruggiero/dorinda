@@ -7,6 +7,8 @@ const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const bodyParser = require("body-parser");
 const utils = require('./utils');
 const app = express();
+const config = require('getconfig');
+const messageActionUrl = config.messageActionUrl;
 
 app.use(bodyParser.urlencoded({extended: false}));
 
@@ -20,10 +22,15 @@ app.post('/sms', (req, res) => {
 
     const response = `${newPredicate}`;
     const twiml = new MessagingResponse();
-    twiml.message(response);
+    twiml.message(response, {action: messageActionUrl});
 
     res.writeHead(200, {'Content-Type': 'text/xml'});
     res.end(twiml.toString());
+});
+
+app.post('/status', (req, res) => {
+    const message = req.body;
+    console.log(message);
 });
 
 const server = app.listen(8081, function() {
