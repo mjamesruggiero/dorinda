@@ -4,15 +4,22 @@
 const http = require('http');
 const express = require('express');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
-const bodyParser = require("body-parser");
+const VoiceResponse = require('twilio').twiml.VoiceResponse;
+const bodyParser = require('body-parser');
 const utils = require('./utils');
 const app = express();
+
 const config = require('getconfig');
 const messageActionUrl = config.messageActionUrl;
 
 app.use(bodyParser.urlencoded({extended: false}));
 
 var todos = [];
+
+app.get('/', (request, response) => {
+    response.writeHead(200, {'Content-Type': 'text/xml'});
+    response.end('<head><body><h1>This is dorinda</h1></body></head>');
+});
 
 app.post('/sms', (req, res) => {
     const message = req.body.Body;
@@ -31,6 +38,31 @@ app.post('/sms', (req, res) => {
 app.post('/status', (req, res) => {
     const message = req.body;
     console.log(message);
+});
+
+app.post('/voice', (request, response) => {
+    const twiml = new VoiceResponse();
+    const moderator = config.moderator;
+
+    const dial = twiml.dial();
+
+    // if caller is MODERATOR, start conference when they join
+    // and end when they leave
+    if (request.body.From === moderator) {
+        dial.conference('My conference', {
+            startConferenceOnEnter: true,
+            endConferenceOnExit: true
+        });
+    } else {
+        // otherwise have caller join as regular participant
+        dial.conference('My conference', {
+            startConferenceOnEnter: false
+        });
+    }
+
+    // render
+    response.type('text/xml');
+    response.send(twiml.toString());
 });
 
 const server = app.listen(8081, function() {
