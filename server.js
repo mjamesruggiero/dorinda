@@ -43,21 +43,28 @@ app.post('/status', (req, res) => {
 app.post('/voice', (request, response) => {
     const twiml = new VoiceResponse();
     const moderator = config.moderator;
+    const allowed = config.allowedConferenceNumber;
+    const myPhoneNumber = config.michaelsPhoneNumber;
 
     const dial = twiml.dial();
 
-    // if caller is MODERATOR, start conference when they join
-    // and end when they leave
-    if (request.body.From === moderator) {
-        dial.conference('My conference', {
-            startConferenceOnEnter: true,
-            endConferenceOnExit: true
-        });
+    if(request.body.From === allowed || request.body.from === myPhoneNumber){
+        // if caller is MODERATOR, start conference when they join
+        // and end when they leave
+        if (request.body.From === moderator) {
+            dial.conference('My conference', {
+                startConferenceOnEnter: true,
+                endConferenceOnExit: true
+            });
+        } else {
+            // otherwise have caller join as regular participant
+            dial.conference('My conference', {
+                startConferenceOnEnter: false
+            });
+        }
     } else {
-        // otherwise have caller join as regular participant
-        dial.conference('My conference', {
-            startConferenceOnEnter: false
-        });
+        // reject them
+        twiml.reject();
     }
 
     // render
